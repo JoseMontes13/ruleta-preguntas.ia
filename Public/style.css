@@ -1,0 +1,358 @@
+:root {
+  --morado: #6c5ce7;
+  --morado-oscuro: #4834d4;
+  --azul: #0984e3;
+  --verde: #00b894;
+  --rojo: #d63031;
+  --texto: #2d3436;
+  --gris: #636e72;
+  --fondo: #f5f6fa;
+  --blanco: #ffffff;
+  --borde: #dfe6e9;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  padding: 20px;
+  background: linear-gradient(135deg, var(--morado), var(--azul));
+  font-family: Arial, sans-serif;
+  color: var(--texto);
+}
+
+.contenedor {
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.pantalla {
+  display: none;
+}
+
+.pantalla.activa {
+  display: block;
+}
+
+.encabezado {
+  margin: 20px 0 25px;
+  color: var(--blanco);
+  text-align: center;
+}
+
+.encabezado h1 {
+  margin: 8px 0;
+  font-size: 32px;
+}
+
+.encabezado p {
+  margin: 0;
+  font-size: 16px;
+}
+
+.icono {
+  font-size: 50px;
+}
+
+.icono.grande {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.tarjeta {
+  margin-bottom: 20px;
+  padding: 25px;
+  border-radius: 18px;
+  background: var(--blanco);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.tarjeta h2 {
+  margin-top: 0;
+  color: var(--morado-oscuro);
+}
+
+label {
+  display: block;
+  margin: 15px 0 6px;
+  font-weight: bold;
+}
+
+input {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid var(--borde);
+  border-radius: 9px;
+  outline: none;
+  font-size: 16px;
+}
+
+input:focus {
+  border-color: var(--azul);
+  box-shadow: 0 0 0 3px rgba(9, 132, 227, 0.15);
+}
+
+.boton {
+  width: 100%;
+  margin-top: 14px;
+  padding: 13px;
+  border: none;
+  border-radius: 9px;
+  color: var(--blanco);
+  cursor: pointer;
+  font-size: 16px;
+  transition: 0.2s;
+}
+
+.boton:hover {
+  transform: translateY(-1px);
+  opacity: 0.9;
+}
+
+.boton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.boton.principal {
+  background: var(--morado);
+}
+
+.boton.secundario {
+  background: var(--azul);
+}
+
+.boton.pequeño {
+  width: auto;
+  margin: 0;
+  padding: 8px 13px;
+  background: var(--rojo);
+  font-size: 14px;
+}
+
+.boton.enviar {
+  width: auto;
+  min-width: 90px;
+  margin: 0;
+  background: var(--verde);
+}
+
+.separador {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+  color: var(--gris);
+}
+
+.separador::before,
+.separador::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--borde);
+}
+
+.mensaje {
+  min-height: 20px;
+  margin: 12px 0 0;
+  color: var(--rojo);
+  text-align: center;
+}
+
+.nota {
+  color: var(--gris);
+  font-size: 14px;
+  text-align: center;
+}
+
+.barraSuperior {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  padding: 12px 15px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.etiqueta {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--gris);
+  font-size: 13px;
+}
+
+#codigoSalaMostrar,
+#codigoSalaJuego {
+  color: var(--morado-oscuro);
+  letter-spacing: 2px;
+}
+
+.listaJugadores {
+  display: grid;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.jugador {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 9px;
+  background: var(--fondo);
+}
+
+.punto {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--verde);
+}
+
+.turno {
+  text-align: center;
+}
+
+.ruleta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 190px;
+  height: 190px;
+  margin: 20px auto;
+  border: 12px solid var(--morado);
+  border-radius: 50%;
+  background: linear-gradient(
+    45deg,
+    #ffeaa7,
+    #fab1a0,
+    #81ecec,
+    #a29bfe
+  );
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+  font-size: 70px;
+}
+
+.ruleta.girando {
+  animation: girar 1.2s ease-in-out;
+}
+
+@keyframes girar {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(720deg);
+  }
+}
+
+.pregunta {
+  text-align: center;
+}
+
+#textoPregunta {
+  margin: 20px 0;
+  font-size: 20px;
+  line-height: 1.4;
+}
+
+.opciones {
+  display: grid;
+  gap: 10px;
+}
+
+.opcion {
+  padding: 13px;
+  border: 2px solid var(--azul);
+  border-radius: 9px;
+  background: var(--blanco);
+  color: var(--azul);
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.opcion:hover {
+  background: var(--azul);
+  color: var(--blanco);
+}
+
+.chat h2 {
+  font-size: 20px;
+}
+
+.mensajes {
+  min-height: 110px;
+  max-height: 230px;
+  overflow-y: auto;
+  margin-bottom: 12px;
+  padding: 12px;
+  border-radius: 9px;
+  background: var(--fondo);
+}
+
+.mensajeSistema {
+  color: var(--gris);
+  font-style: italic;
+}
+
+.entradaChat {
+  display: flex;
+  gap: 8px;
+}
+
+.entradaChat input {
+  flex: 1;
+}
+
+.resultado {
+  margin-top: 80px;
+  text-align: center;
+}
+
+.resultado h1 {
+  color: var(--morado-oscuro);
+}
+
+.oculto {
+  display: none;
+}
+
+@media (max-width: 500px) {
+  body {
+    padding: 12px;
+  }
+
+  .encabezado h1 {
+    font-size: 26px;
+  }
+
+  .tarjeta {
+    padding: 18px;
+  }
+
+  .barraSuperior {
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .entradaChat {
+    flex-direction: column;
+  }
+
+  .boton.enviar {
+    width: 100%;
+  }
+
+  .ruleta {
+    width: 150px;
+    height: 150px;
+    font-size: 55px;
+  }
+}

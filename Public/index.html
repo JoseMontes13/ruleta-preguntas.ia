@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#5637d5">
+  <title>PREGUNTAS Y SHOT</title>
+  <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+  <main class="contenedor">
+    <section id="pantallaInicio" class="pantalla activa" aria-labelledby="tituloInicio">
+      <header class="encabezado">
+        <span class="icono" aria-hidden="true">🎡</span>
+        
+        <h1 id="tituloInicio">PREGUNTAS Y SHOT</h1>
+        <p>Conoce me ALV.</p>
+      </header>
+
+      <div class="tarjeta">
+        <h2>QUE COMIENCE EL JUEGO</h2>
+        <label for="nombreJugador">APODO O NOMBRE <span aria-hidden="true">*</span></label>
+        <input
+          type="text"
+          id="nombreJugador"
+          placeholder="Escribe tu nombre"
+          minlength="2"
+          maxlength="20"
+          autocomplete="name"
+          required
+        >
+
+        <button id="botonCrearSala" class="boton principal" type="button">
+          Crear una sala
+        </button>
+
+        <div class="separador"><span>o únete con un código</span></div>
+
+        <label for="codigoSala">Código de sala</label>
+        <input
+          type="text"
+          id="codigoSala"
+          placeholder="Ejemplo: ABCD72"
+          minlength="6"
+          maxlength="6"
+          autocomplete="off"
+          autocapitalize="characters"
+          aria-describedby="ayudaCodigo"
+        >
+        <p id="ayudaCodigo" class="ayuda">El código debe tener 6 caracteres.</p>
+
+        <button id="botonUnirseSala" class="boton secundario" type="button">
+          Unirme a una sala
+        </button>
+        <p id="mensajeInicio" class="mensaje" role="alert" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <section id="pantallaSala" class="pantalla" aria-labelledby="tituloSala">
+      <div class="barraSuperior">
+        <div>
+          <span class="etiqueta">Código de sala</span>
+          <strong id="codigoSalaMostrar">------</strong>
+        </div>
+        <button id="botonSalirSala" class="boton pequeño" type="button">Salir</button>
+      </div>
+
+      <div class="tarjeta">
+        <p class="sobretitulo">SALA DE ESPERA</p>
+        <h1 id="tituloSala">¡Todo listo para jugar!</h1>
+        <p id="estadoSala" class="textoSecundario">Esperando jugadores...</p>
+        <h2>Jugadores <span id="contadorJugadores" class="contador"></span></h2>
+        <ul id="listaJugadores" class="listaJugadores" aria-label="Jugadores en la sala"></ul>
+        <button id="botonComenzar" class="boton principal" type="button">
+          Comenzar partida
+        </button>
+        <p class="nota">Máximo 4 jugadores. Aquí aparecen quienes están conectados a esta sala.</p>
+      </div>
+
+      <section class="tarjeta chat" aria-labelledby="tituloChatSala">
+        <h2 id="tituloChatSala">Chat de la sala</h2>
+        <div id="mensajesChat" class="mensajes" aria-live="polite">
+          <p class="mensajeSistema">Los mensajes aparecerán aquí.</p>
+        </div>
+        <p class="mensaje mensajeEstadoChat" role="alert" aria-live="polite"></p>
+        <form id="formularioChat" class="entradaChat">
+          <label class="soloLectores" for="textoChat">Mensaje para el chat de la sala</label>
+          <input type="text" id="textoChat" placeholder="Escribe un mensaje" maxlength="200" autocomplete="off">
+          <button id="botonEnviarChat" class="boton enviar" type="button">Enviar</button>
+        </form>
+        <div id="mensajesChatSala" class="mensajes" aria-live="polite" hidden></div>
+        <form id="formularioChatSala" class="entradaChat" hidden>
+          <label class="soloLectores" for="textoChatSala">Mensaje para el chat de la sala</label>
+          <input type="text" id="textoChatSala" placeholder="Escribe un mensaje" maxlength="200" autocomplete="off">
+          <button class="boton enviar" type="submit">Enviar</button>
+        </form>
+      </section>
+    </section>
+
+    <section id="pantallaJuego" class="pantalla" aria-labelledby="tituloJuego">
+      <div class="barraSuperior">
+        <div>
+          <span class="etiqueta">Código de sala</span>
+          <strong id="codigoSalaJuego">------</strong>
+        </div>
+        <div id="rondaActual" class="insigniaRonda">Ronda 1</div>
+      </div>
+
+      <div class="tarjeta turno">
+        <p class="sobretitulo">ES HORA DE JUGAR</p>
+        <h1 id="tituloJuego">¿Quién responderá?</h1>
+        <p id="jugadorTurno" class="textoSecundario">Gira la ruleta para elegir a alguien.</p>
+        <div id="ruleta" class="ruleta" aria-hidden="true">
+          <span class="iconoRuleta">🎡</span>
+          <span id="resultadoShot" class="resultadoShot">¡SHOT! 🥃</span>
+        </div>
+        <label class="nivelPreguntaLabel" for="nivelPregunta">Nivel de la pregunta</label>
+        <select id="nivelPregunta" class="nivelPregunta">
+          <option value="divertido" selected>Divertido</option>
+          <option value="personal">Personal</option>
+          <option value="profundo">Profundo</option>
+        </select>
+        <button id="botonGirar" class="boton principal" type="button">Girar ruleta</button>
+        <p id="estadoPregunta" class="estadoPregunta" role="status" aria-live="polite"></p>
+      </div>
+
+      <div id="tarjetaPregunta" class="tarjeta pregunta oculto" aria-live="polite">
+        <p class="sobretitulo">PREGUNTA PARA</p>
+        <h2 id="jugadorPregunta">Jugador</h2>
+        <p id="textoPregunta">La pregunta aparecerá aquí.</p>
+        <p id="mensajeRespuesta" class="indicacionChat">Responde en el chat para que todos puedan participar.</p>
+      </div>
+
+      <section class="tarjeta chat" aria-labelledby="tituloChatJuego">
+        <h2 id="tituloChatJuego">Chat de la partida</h2>
+        <div id="mensajesChatJuego" class="mensajes" aria-live="polite">
+          <p class="mensajeSistema">Conversación de la partida.</p>
+        </div>
+        <p class="mensaje mensajeEstadoChat" role="alert" aria-live="polite"></p>
+        <form id="formularioChatJuego" class="entradaChat">
+          <label class="soloLectores" for="textoChatJuego">Mensaje para el chat de la partida</label>
+          <input type="text" id="textoChatJuego" placeholder="Escribe un mensaje" maxlength="200" autocomplete="off">
+          <button id="botonEnviarChatJuego" class="boton enviar" type="button">Enviar</button>
+        </form>
+      </section>
+    </section>
+
+    <section id="pantallaResultado" class="pantalla" aria-labelledby="tituloResultado">
+      <div class="tarjeta resultado">
+        <span class="icono grande" aria-hidden="true">🎉</span>
+        <p class="sobretitulo">¡BUEN TRABAJO!</p>
+        <h1 id="tituloResultado">Ronda terminada</h1>
+        <p id="textoResultado">La ronda ha terminado.</p>
+        <button id="botonSiguienteRonda" class="boton principal" type="button">
+          Siguiente ronda
+        </button>
+        <button id="botonTerminarJuego" class="boton secundario" type="button">
+          Terminar juego
+        </button>
+      </div>
+    </section>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+</body>
+</html>
