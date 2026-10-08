@@ -27,7 +27,20 @@ let clavePresencia = "";
 let ronda = 1;
 let jugadorSeleccionado = "";
 let shotActual = false;
-const nivelesPregunta = ["divertido", "personal", "profundo"];
+const categoriasPregunta = [
+  "personal",
+  "gustos",
+  "familia",
+  "amistades",
+  "pasado",
+  "sentimientos",
+  "relaciones",
+  "futuro",
+  "metas",
+  "preguntas-profundas",
+  "divertidas",
+  "atrevidas"
+];
 
 function cambiarPantalla(idPantalla) {
   pantallas.forEach((pantalla) => {
@@ -342,10 +355,13 @@ async function conectarseASala() {
         return;
       }
 
-      const mensajeError =
-        payload.mensaje === "Gemini está temporalmente ocupado. Intenta nuevamente en unos segundos."
-          ? payload.mensaje
-          : "No se pudo generar la pregunta. Intenta nuevamente.";
+      const mensajesErrorPermitidos = [
+        "Gemini está temporalmente ocupado. Intenta nuevamente en unos segundos.",
+        "Gemini alcanzó el límite temporal de solicitudes. Intenta nuevamente en unos segundos."
+      ];
+      const mensajeError = mensajesErrorPermitidos.includes(payload.mensaje)
+        ? payload.mensaje
+        : "No se pudo generar la pregunta. Intenta nuevamente.";
       document.getElementById("estadoPregunta").textContent = mensajeError;
     })
     .on("broadcast", { event: "mensaje-chat" }, ({ payload }) => {
@@ -590,12 +606,12 @@ function mostrarPreguntaAbierta(nombreJugadorSeleccionado, pregunta) {
   return true;
 }
 
-async function generarPreguntaConIA(nivel = "divertido") {
-  const nivelValido = nivelesPregunta.includes(nivel) ? nivel : "divertido";
+async function generarPreguntaConIA(categoria = "divertidas") {
+  const categoriaValida = categoriasPregunta.includes(categoria) ? categoria : "divertidas";
   const respuesta = await fetch("/.netlify/functions/generar-pregunta", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ nivel: nivelValido })
+    body: JSON.stringify({ categoria: categoriaValida })
   });
 
   let datos;
@@ -693,10 +709,13 @@ async function girarRuleta() {
     mostrarPreguntaAbierta(nombre, pregunta);
   } catch (error) {
     console.error("Error al generar o compartir la pregunta:", error);
-    const mensajeError =
-      error.message === "Gemini está temporalmente ocupado. Intenta nuevamente en unos segundos."
-        ? error.message
-        : "No se pudo generar la pregunta. Intenta nuevamente.";
+    const mensajesErrorPermitidos = [
+      "Gemini está temporalmente ocupado. Intenta nuevamente en unos segundos.",
+      "Gemini alcanzó el límite temporal de solicitudes. Intenta nuevamente en unos segundos."
+    ];
+    const mensajeError = mensajesErrorPermitidos.includes(error.message)
+      ? error.message
+      : "No se pudo generar la pregunta. Intenta nuevamente.";
     document.getElementById("estadoPregunta").textContent = mensajeError;
     try {
       if (canalSala && jugadorSeleccionado) {
