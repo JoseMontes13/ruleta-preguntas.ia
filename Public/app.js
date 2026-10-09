@@ -14,13 +14,14 @@ const nombreJugadorInput = document.getElementById("nombreJugador");
 const codigoSalaInput = document.getElementById("codigoSala");
 const mensajeInicio = document.getElementById("mensajeInicio");
 const botonComenzar = document.getElementById("botonComenzar");
-const PROBABILIDAD_SHOT = 0.25;
 
 let nombreJugador = "";
 let codigoSala = "";
 let canalSala = null;
 let conectadoASala = false;
 let esAnfitrion = false;
+let partidaIniciada = false;
+let anfitrionVistoEnSala = false;
 let ruletaOcupada = false;
 let jugadores = [];
 let clavePresencia = "";
@@ -97,11 +98,12 @@ function obtenerJugadoresConectados() {
   const estado = canalSala.presenceState();
   return Object.entries(estado).flatMap(([clave, presencias]) =>
     presencias
-      .filter((presencia) => presencia.conectado === true && typeof presencia.nombre === "string")
+      .filter((presencia) => typeof presencia.nombre === "string" && presencia.nombre.trim())
       .map((presencia) => ({
         clave,
-        nombre: presencia.nombre,
+        nombre: presencia.nombre.trim(),
         anfitrion: presencia.anfitrion === true,
+        partidaIniciada: presencia.partidaIniciada === true,
         unidoEn: Number(presencia.unidoEn) || 0
       }))
   );
@@ -111,6 +113,19 @@ function actualizarListaJugadores(jugadoresConectados = obtenerJugadoresConectad
   jugadores = jugadoresConectados.slice(0, 4);
   const lista = document.getElementById("listaJugadores");
   lista.replaceChildren();
+
+  ["participantesChatSala", "participantesChatJuego"].forEach((id) => {
+    const listaParticipantes = document.getElementById(id);
+    listaParticipantes.replaceChildren();
+    jugadores.forEach((jugador) => {
+      const participante = document.createElement("li");
+      participante.className = "participanteChat";
+      participante.textContent = jugador.clave === clavePresencia
+        ? `${jugador.nombre} (tú)`
+        : jugador.nombre;
+      listaParticipantes.append(participante);
+    });
+  });
 
   jugadores.forEach((jugador) => {
     const elemento = document.createElement("li");
@@ -282,6 +297,17 @@ function manejarCambioPresence(canalActual) {
   const conectados = obtenerJugadoresConectados();
   actualizarListaJugadores(conectados);
 
+  const anfitrion = conectados.find((jugador) => jugador.anfitrion);
+  if (anfitrion) {
+    anfitrionVistoEnSala = true;
+    if (anfitrion.partidaIniciada) {
+      iniciarPantallaJuego();
+    }
+  } else if (!esAnfitrion && anfitrionVistoEnSala) {
+    void desconectarseDeSala("El anfitrión salió. La sala se cerró.");
+    return;
+  }
+
   if (conectados.length <= 4) {
     return;
   }
@@ -316,7 +342,7 @@ async function conectarseASala() {
     ? window.crypto.randomUUID()
     : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
-  const canalActual = supabaseClient.channel(`ruleta-${codigoSala}`, {
+  const canalActual = supabaseClient.channel(`juego-${codigoSala}`, {
     config: { presence: { key: clavePresencia } }
   });
   canalSala = canalActual;
@@ -326,11 +352,17 @@ async function conectarseASala() {
     .on("presence", { event: "sync" }, () => manejarCambioPresence(canalActual))
     .on("presence", { event: "join" }, () => manejarCambioPresence(canalActual))
     .on("presence", { event: "leave" }, () => manejarCambioPresence(canalActual))
+    .on("broadcast", { event: "ruleta-girando" }, () => animarRuleta())
     .on("broadcast", { event: "jugador-seleccionado" }, ({ payload }) => {
       mostrarJugadorSeleccionado(payload);
     })
     .on("broadcast", { event: "partida-iniciada" }, () => {
       iniciarPantallaJuego();
+    })
+    .on("broadcast", { event: "sala-cerrada" }, () => {
+      if (!esAnfitrion && canalSala === canalActual) {
+        void desconectarseDeSala("El anfitrión salió. La sala se cerró.");
+      }
     })
     .on("broadcast", { event: "pregunta-generada" }, ({ payload }) => {
       if (
@@ -392,7 +424,8 @@ async function conectarseASala() {
             nombre: nombreJugador,
             conectado: true,
             anfitrion: esAnfitrion,
-            unidoEn: Date.now()
+            unidoEn: Date.now(),
+            partidaIniciada: false
           });
 
           if (resultado !== "ok") {
@@ -429,6 +462,8 @@ async function entrarALaSala() {
   document.getElementById("estadoSala").textContent = "Conectando con la sala...";
   limpiarChatsTemporales();
   document.getElementById("listaJugadores").replaceChildren();
+  document.getElementById("participantesChatSala").replaceChildren();
+  document.getElementById("participantesChatJuego").replaceChildren();
   document.getElementById("contadorJugadores").textContent = "0/4";
   document.getElementById("botonComenzar").disabled = true;
   cambiarPantalla("pantallaSala");
@@ -451,6 +486,7 @@ async function desconectarseDeSala(mensaje = "") {
   const errores = [];
   canalSala = null;
   conectadoASala = false;
+  anfitrionVistoEnSala = false;
 
   if (canalActual) {
     try {
@@ -487,6 +523,8 @@ async function desconectarseDeSala(mensaje = "") {
   codigoSala = "";
   nombreJugador = "";
   esAnfitrion = false;
+  partidaIniciada = false;
+  anfitrionVistoEnSala = false;
   clavePresencia = "";
   jugadores = [];
   ronda = 1;
@@ -509,9 +547,13 @@ async function desconectarseDeSala(mensaje = "") {
 }
 
 function iniciarPantallaJuego() {
-  ronda = 1;
-  document.getElementById("rondaActual").textContent = `Ronda ${ronda}`;
-  document.getElementById("tarjetaPregunta").classList.add("oculto");
+  if (!partidaIniciada) {
+    ronda = 1;
+    document.getElementById("rondaActual").textContent = `Ronda ${ronda}`;
+    document.getElementById("tarjetaPregunta").classList.add("oculto");
+    partidaIniciada = true;
+  }
+
   document.getElementById("botonGirar").disabled = !esAnfitrion;
   cambiarPantalla("pantallaJuego");
 }
@@ -523,6 +565,19 @@ async function iniciarPartida() {
 
   botonComenzar.disabled = true;
   try {
+    const presenciaAnfitrion = obtenerJugadoresConectados()
+      .find((jugador) => jugador.clave === clavePresencia);
+    const estadoPresence = await canalSala.track({
+      nombre: nombreJugador,
+      conectado: true,
+      anfitrion: true,
+      unidoEn: presenciaAnfitrion ? presenciaAnfitrion.unidoEn : Date.now(),
+      partidaIniciada: true
+    });
+    if (estadoPresence !== "ok") {
+      throw new Error(`No se pudo guardar el estado de la partida (estado: ${estadoPresence}).`);
+    }
+
     const resultado = await canalSala.send({
       type: "broadcast",
       event: "partida-iniciada",
@@ -556,6 +611,7 @@ function mostrarJugadorSeleccionado(payload) {
   jugadorSeleccionado = nombre;
   shotActual = payload.shot === true;
   const ruleta = document.getElementById("ruleta");
+  ruleta.classList.remove("girando");
   const resultadoShot = document.getElementById("resultadoShot");
   resultadoShot.textContent = shotActual ? "¡SHOT! 🥃" : "";
   ruleta.classList.remove("shot-activo");
@@ -567,6 +623,13 @@ function mostrarJugadorSeleccionado(payload) {
     `¡Le toca a ${nombre}!${shotActual ? "\n¡Te toca shot! 🥃" : ""}`;
   document.getElementById("estadoPregunta").textContent = "Generando pregunta...";
   document.getElementById("tarjetaPregunta").classList.add("oculto");
+}
+
+function animarRuleta() {
+  const ruleta = document.getElementById("ruleta");
+  ruleta.classList.remove("girando");
+  void ruleta.offsetWidth;
+  ruleta.classList.add("girando");
 }
 
 function mostrarPreguntaAbierta(nombreJugadorSeleccionado, pregunta) {
@@ -596,7 +659,7 @@ function mostrarPreguntaAbierta(nombreJugadorSeleccionado, pregunta) {
 
   jugadorSeleccionado = nombre;
   document.getElementById("jugadorTurno").textContent =
-    `¡Le toca a ${nombre}!${shotActual ? "\n¡Te toca shot! 🥃" : ""}`;
+    `¡Le toca a ${nombre}!`;
   document.getElementById("jugadorPregunta").textContent = nombre;
   document.getElementById("textoPregunta").textContent = texto;
   document.getElementById("mensajeRespuesta").textContent =
@@ -675,15 +738,22 @@ async function girarRuleta() {
   botonGirar.disabled = true;
   tarjetaPregunta.classList.add("oculto");
   document.getElementById("estadoPregunta").textContent = "";
-  ruleta.classList.remove("girando");
-  void ruleta.offsetWidth;
-  ruleta.classList.add("girando");
 
   try {
+    const resultadoGiro = await canalSala.send({
+      type: "broadcast",
+      event: "ruleta-girando",
+      payload: {}
+    });
+    if (resultadoGiro !== "ok") {
+      throw new Error(`No se pudo compartir el giro de la ruleta (estado: ${resultadoGiro}).`);
+    }
+
+    animarRuleta();
     await new Promise((resolve) => window.setTimeout(resolve, 1200));
     ruleta.classList.remove("girando");
     const nombre = nombresJugadores[Math.floor(Math.random() * nombresJugadores.length)];
-    const shot = Math.random() < PROBABILIDAD_SHOT;
+    const shot = Math.random() < 0.25;
     const resultado = await canalSala.send({
       type: "broadcast",
       event: "jugador-seleccionado",
@@ -735,8 +805,29 @@ async function girarRuleta() {
   }
 }
 
+async function salirDeSala() {
+  if (esAnfitrion && canalSala) {
+    try {
+      const resultado = await canalSala.send({
+        type: "broadcast",
+        event: "sala-cerrada",
+        payload: {}
+      });
+      if (resultado !== "ok") {
+        console.error(`No se pudo avisar que la sala se cerró (estado: ${resultado}).`);
+      }
+    } catch (error) {
+      console.error("No se pudo avisar que la sala se cerró:", error);
+    }
+  }
+
+  await desconectarseDeSala(
+    esAnfitrion ? "" : "Saliste de la sala."
+  );
+}
+
 function terminarJuego() {
-  void desconectarseDeSala();
+  void salirDeSala();
   mostrarMensajeInicio("");
 }
 
@@ -781,15 +872,15 @@ document.getElementById("botonUnirseSala").addEventListener("click", () => {
   void entrarALaSala();
 });
 
-document.getElementById("botonSalirSala").addEventListener("click", () => {
-  void desconectarseDeSala();
-});
+document.getElementById("botonSalirSala").addEventListener("click", salirDeSala);
+document.getElementById("botonSalirJuego").addEventListener("click", salirDeSala);
 botonComenzar.addEventListener("click", iniciarPartida);
 document.getElementById("botonGirar").addEventListener("click", girarRuleta);
 document.getElementById("botonSiguienteRonda").addEventListener("click", () => {
   ronda += 1;
   document.getElementById("rondaActual").textContent = `Ronda ${ronda}`;
   document.getElementById("jugadorTurno").textContent = "Gira la ruleta para elegir a alguien.";
+  jugadorSeleccionado = "";
   shotActual = false;
   document.getElementById("estadoPregunta").textContent = "";
   document.getElementById("tarjetaPregunta").classList.add("oculto");

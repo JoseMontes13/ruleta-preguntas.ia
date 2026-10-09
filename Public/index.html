@@ -78,6 +78,10 @@
       </div>
 
       <section class="tarjeta chat" aria-labelledby="tituloChatSala">
+        <div class="participantesChat">
+          <h3>Participantes</h3>
+          <ul id="participantesChatSala" class="listaParticipantes" aria-label="Participantes conectados"></ul>
+        </div>
         <h2 id="tituloChatSala">Chat de la sala</h2>
         <div id="mensajesChat" class="mensajes" aria-live="polite">
           <p class="mensajeSistema">Los mensajes aparecerán aquí.</p>
@@ -103,7 +107,10 @@
           <span class="etiqueta">Código de sala</span>
           <strong id="codigoSalaJuego">------</strong>
         </div>
-        <div id="rondaActual" class="insigniaRonda">Ronda 1</div>
+        <div class="accionesPartida">
+          <div id="rondaActual" class="insigniaRonda">Ronda 1</div>
+          <button id="botonSalirJuego" class="boton pequeño" type="button">Salir</button>
+        </div>
       </div>
 
       <div class="tarjeta turno">
@@ -141,6 +148,10 @@
       </div>
 
       <section class="tarjeta chat" aria-labelledby="tituloChatJuego">
+        <div class="participantesChat">
+          <h3>Participantes</h3>
+          <ul id="participantesChatJuego" class="listaParticipantes" aria-label="Participantes conectados"></ul>
+        </div>
         <h2 id="tituloChatJuego">Chat de la partida</h2>
         <div id="mensajesChatJuego" class="mensajes" aria-live="polite">
           <p class="mensajeSistema">Conversación de la partida.</p>

@@ -258,6 +258,12 @@ input:focus {
   font-weight: 750;
 }
 
+.accionesPartida {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .contador {
   display: inline-block;
   padding: 4px 9px;
@@ -270,6 +276,32 @@ input:focus {
   margin: 14px 0;
   padding: 0;
   list-style: none;
+}
+
+.participantesChat {
+  margin-bottom: 16px;
+}
+
+.participantesChat h3 {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+}
+
+.listaParticipantes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.participanteChat {
+  padding: 5px 10px;
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  background: var(--fondo);
+  font-size: 0.9rem;
 }
 
 .jugador {

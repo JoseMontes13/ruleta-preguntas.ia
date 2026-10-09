@@ -85,8 +85,7 @@ exports.handler = async (event) => {
     return respuesta(400, { error: "Selecciona una categoría válida para la pregunta." });
   }
 
-  // AQUÍ VA EL API en el archivo .env de la raíz del proyecto (no pegues la clave en este archivo):
-  // GEMINI_API_KEY=PEGA_AQUI_TU_API
+  // GEMINI_API_KEY debe estar configurada en el entorno de Netlify.
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     console.error("GEMINI_API_KEY no está configurada.");
